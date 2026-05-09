@@ -877,7 +877,7 @@ Hashtag 規則（嚴格產出 5 個，每個都要精準命中，不可亂下）
 
   try {
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -889,7 +889,7 @@ Hashtag 規則（嚴格產出 5 個，每個都要精準命中，不可亂下）
               { text: userText }
             ]
           }],
-          generationConfig: { temperature: 0.8, maxOutputTokens: 512 }
+          generationConfig: { temperature: 0.8, maxOutputTokens: 512, thinkingConfig: { thinkingBudget: 0 } }
         })
       }
     );
@@ -901,7 +901,8 @@ Hashtag 規則（嚴格產出 5 個，每個都要精準命中，不可亂下）
     }
 
     const data = await resp.json();
-    const raw  = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+    const parts = data.candidates?.[0]?.content?.parts ?? [];
+    const raw   = (parts.find(p => p.text && !p.thought)?.text ?? '').trim();
 
     let parsed = tryParseJson(raw);
     if (!parsed || !parsed.caption || !Array.isArray(parsed.hashtags)) {
